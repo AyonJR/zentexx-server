@@ -29,6 +29,11 @@ async function run() {
     const standardFundingCollection = client.db("zentexx").collection("standardFunding");
     const instantFundingCollection = client.db("zentexx").collection("instantFunding");
     const p10Collection = client.db("zentexx").collection("p10");
+    const p20Collection = client.db("zentexx").collection("p20");
+    const p30Collection = client.db("zentexx").collection("p30");
+    const p40Collection = client.db("zentexx").collection("p40");
+    const p50Collection = client.db("zentexx").collection("p50");
+
 
 
    
