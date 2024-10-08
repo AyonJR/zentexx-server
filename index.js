@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -9,6 +9,10 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+const ADMIN_EMAIL = process.env.ADMIN_MAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASS;
+
+console.log(ADMIN_EMAIL, ADMIN_PASSWORD);
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4dm99p5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -18,7 +22,7 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
@@ -26,82 +30,66 @@ async function run() {
     // Connect to the MongoDB client
     await client.connect();
 
-    const standardFundingCollection = client.db("zentexx").collection("standardFunding");
-    const instantFundingCollection = client.db("zentexx").collection("instantFunding");
-    const p10Collection = client.db("zentexx").collection("p10");
-    const p20Collection = client.db("zentexx").collection("p20");
-    const p30Collection = client.db("zentexx").collection("p30");
-    const p40Collection = client.db("zentexx").collection("p40");
-    const p50Collection = client.db("zentexx").collection("p50");
+    const standardFundingCollection = client
+      .db("zentexx")
+      .collection("standardFunding");
+    const instantFundingCollection = client
+      .db("zentexx")
+      .collection("instantFunding");
 
+    const priceCollection = client.db("zentexx").collection("price");
 
+    app.get("/price", async (req, res) => {
+      try {
+        const result = await priceCollection.find().toArray();
+        res.send(result);
+      } catch (error) {
+        res
+          .status(500)
+          .send({ message: "Failed to fetch standard funding data" });
+      }
+    });
 
-   
-    // price getting
+    // Login route
+    app.post("/login", (req, res) => {
+      console.log(req.body);
+      const { email, password } = req.body;
 
-    app.get('/p10', async(req,res)=> {
-      const result = await p10Collection.find().toArray()
-      res.send(result)
-    })
-
-    app.get('/p20', async(req,res)=> {
-      const result = await p20Collection.find().toArray()
-      res.send(result)
-    })
-
-    app.get('/p30', async(req,res)=> {
-      const result = await p30Collection.find().toArray()
-      res.send(result)
-    })
-
-    app.get('/p40', async(req,res)=> {
-      const result = await p40Collection.find().toArray()
-      res.send(result)
-    })
-
-    app.get('/p50', async(req,res)=> {
-      const result = await p50Collection.find().toArray()
-      res.send(result)
-    })
-
-
-
+      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        return res.send({ success: true, message: "Login successful" });
+      } else {
+        return res
+          .status(401)
+          .json({ success: false, message: "Invalid credentials" });
+      }
+    });
 
     // Standard Funding
-    app.get('/standardFunding', async (req, res) => {
+    app.get("/standardFunding", async (req, res) => {
       try {
         const result = await standardFundingCollection.find().toArray();
         res.send(result);
       } catch (error) {
-        res.status(500).send({ message: "Failed to fetch standard funding data" });
+        res
+          .status(500)
+          .send({ message: "Failed to fetch standard funding data" });
       }
     });
 
+    // instant Funding
 
-  // instant Funding 
+    app.get("/instantFunding", async (req, res) => {
+      try {
+        const result = await instantFundingCollection.find().toArray();
+        res.send(result);
+      } catch (error) {
+        res
+          .status(500)
+          .send({ message: "Failed to fetch standard funding data" });
+      }
+    });
 
-  app.get('/instantFunding', async (req, res) => {
-    try {
-      const result = await instantFundingCollection.find().toArray();
-      res.send(result);
-    } catch (error) {
-      res.status(500).send({ message: "Failed to fetch standard funding data" });
-    }
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-    app.get('/', (req, res) => {
+    app.get("/", (req, res) => {
       res.send("Server is running");
     });
 
@@ -111,8 +99,9 @@ async function run() {
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
   }
