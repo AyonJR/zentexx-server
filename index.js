@@ -89,6 +89,83 @@ async function run() {
       }
     });
 
+
+  // single Update Item 
+
+  app.get("/price/:id", async(req,res)=> {
+    const id = req.params.id 
+    const query = {_id : new ObjectId(id)}
+    const result = await priceCollection.findOne(query)
+    res.send(result)
+
+  })
+
+
+  // updating that item 
+
+
+   // PATCH route to update a price item by ID
+app.patch("/price/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedData = req.body; // The data that will be used to update the item
+
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      r1: updatedData.r1,
+      r2: updatedData.r2,
+      r3: updatedData.r3,
+      r4: updatedData.r4,
+      r5: updatedData.r5,
+      r6: updatedData.r6,
+      r7: updatedData.r7,
+      row: updatedData.row,
+    },
+  };
+
+  try {
+    const result = await priceCollection.updateOne(filter, updateDoc);
+    if (result.matchedCount > 0) {
+      res.send({ success: true, message: "Item updated successfully" });
+    } else {
+      res.status(404).send({ success: false, message: "Item not found" });
+    }
+  } catch (error) {
+    res.status(500).send({ success: false, message: "Failed to update item" });
+  }
+});
+
+
+// DELETE route to remove a price item by ID
+app.delete("/price/:id", async (req, res) => {
+  const id = req.params.id; 
+
+  try {
+    const query = { _id: new ObjectId(id) }; 
+    const result = await priceCollection.deleteOne(query); 
+
+    if (result.deletedCount > 0) {
+      res.send({ success: true, message: "Item deleted successfully" });
+    } else {
+      res.status(404).send({ success: false, message: "Item not found" });
+    }
+  } catch (error) {
+    res.status(500).send({ success: false, message: "Failed to delete item" });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.get("/", (req, res) => {
       res.send("Server is running");
     });
